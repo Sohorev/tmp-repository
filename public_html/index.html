@@ -1,0 +1,186 @@
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="js/libs/jquery/jquery.min.js"></script>
+        <script src="js/libs/jquery/jquery-ui-1.10.4.custom.min.js"></script>
+        <script src="js/libs/underscore.js/underscore-min.js"></script>
+        <script src="js/libs/backbone.js/backbone-min.js"></script>
+        <script src="js/models/line.js"></script>
+        <script src="js/collections/pattern.js"></script>
+        <script src="js/views/line.js"></script>
+        <script src="js/views/pattern.js"></script>
+        <script src="js/app.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/receipt.css">
+        <link rel="stylesheet" type="text/css" href="css/receipt.css">
+        <link rel="stylesheet" type="text/css" href="css/ui-smoothness-1.10.4/jquery-ui-1.10.4.custom.min.css"/>
+    </head>
+    <body>
+        <div id="lineTemplate" style="display:none;">
+            <input type="text" value="<%= text %>">
+            <span class="dragabble">Нажмите и ведите для перетаскивания</span>
+            <div class="actionList">
+                <button class="menuButton">Добавить</button>
+                <button class="deleteButton">Удалить</button>
+            </div>
+        </div>      
+        <div>
+            <form action="" method="post" enctype="application/x-www-form-urlencoded" id="terminalForm">
+                type: <input name="type"><br/>
+                name: <input name="name"><br/>
+                parent: <input name="parent"><br/>
+                <table>
+                    <tr>
+                        <td>
+                            <input name="service_multi">
+                        </td>
+                        <td style="padding:180px 15px 0 0;">
+                            <input type="button" value=">>>" id="addServices" /><br/>
+                            <input type="button" value="<<<" id="removeServices" />
+                        </td>
+                        <td>
+                            <input name="service_multi_selected">
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="clear"></div>
+                <div class="spacer" style="height:10px;"></div>
+
+                <div id="pattern">
+                    <div class="linesContainer">
+                    </div>
+                    <div><button class="restoreLineButton">Восстановить удаленную строку</button></div>
+                </div>
+
+                <input type="submit" name="save_and_back">
+                <input type="submit" name="save">
+                <input type="button" class="button" value="Предпросмотр" id="preview" />
+                <input type="button" name="cancel">
+            </form>
+
+            <div id="menuContainer">
+                <ul id="addMenu">
+                    <li><a href="#string">Строку</a></li>
+                    <li><a href="#logo">Логотип</a></li>
+                    <li><a href="#vtab">Пустую строку</a></li>
+                    <li><a href="#sep">Пунктир ------</a></li>
+                    <li><a href="#subst">Подстановку</a></li>
+                    <li><a href="#rawblock">Блок текста</a></li>
+                    <li><a href="#support">Служба поддержки</a></li>
+                    <li><a href="#site">Сайт</a></li>
+                    <li><a href="#cancel">Отмена</a></li>
+                </ul>
+            </div>
+
+            <script language="JavaScript">
+                $().ready(function () {
+                    //    fieldManager = new FieldManager();
+                    //    dataKeeper = new DataKeeper();
+                    //    preview = new Preview();
+                    //    specialHndl = new Special();
+                    //    var rmgrContainer = fieldManager.draw(new Array());
+
+                    //    $(rmgrContainer).appendTo($("#linesContainer"));
+
+                    $("#addMenu").menu().hide();
+                    $("#menuContainer").show();
+                    $("#addMenu").mouseleave(function () {
+                        menuHideTimer = setTimeout('$("#addMenu").hide()', 500);
+                    });
+                    $("#addMenu").mouseenter(function () {
+                        if (window.menuHideTimer)
+                            clearTimeout(menuHideTimer);
+                    });
+
+                    //    $("#save_and_back, #save").click(function () {
+                    //
+                    //        var $this = $(this);
+                    //        var data = {
+                    //            //'id': '<?php echo $this->patternId?>',
+                    //            'lines': fieldManager.get(),
+                    //            'name': $("#name").val(),
+                    //            'type': $("#type").val()
+                    //        };
+                    //        if ($("#type").val() == "<?php echo QP_Model_ReceiptPattern::TYPE_SUBSTITUTION;?>" ||
+                    //            $("#type").val() == "<?php echo QP_Model_ReceiptPattern::TYPE_CUSTOMDOC;?>" ||
+                    //            $("#type").val() == "<?php echo QP_Model_ReceiptPattern::TYPE_ENCASHMENT;?>") {
+                    //
+                    //            $("#service_multi_selected").selectOptions(/./);
+                    //            data['service_ids'] = $("#service_multi_selected").selectedValues();
+                    //            data['parent'] = $("#parent").val();
+                    //        }
+                    //
+                    //        //$.post('<?php echo $this->url(['controller' => 'pattern-edit', 'action' => 'save']);?>', data, function(result) {
+                    //        $.get('pattern-edit/save', data, function(result) {
+                    //            if (result.code === 0) {
+                    //                if ($this.attr("id") == "save_and_back") {
+                    //                    window.location = 'pattern-list/index';
+                    //                } else {
+                    //                    $(".button").show();
+                    //                }
+                    //            } else {
+                    //                alert("Не удалось сохранить шаблон \n" + result.message);
+                    //                $(".button").show();
+                    //            }
+                    //        });
+                    //
+                    //        return false;
+                    //    });
+
+                    //    $("#cancel").click(function() {
+                    //        history.back();
+                    //        return false;
+                    //    });
+
+                    //    function showHideParent($type) {
+                    //
+                    //        if ($type.val() == "subst" || // <?php echo QP_Model_ReceiptPattern::TYPE_SUBSTITUTION;?>
+                    //            $type.val() == "customdoc" || // <?php echo QP_Model_ReceiptPattern::TYPE_CUSTOMDOC;?>
+                    //            $type.val() == "encashment") { // <?php echo QP_Model_ReceiptPattern::TYPE_ENCASHMENT;?>
+                    //            $("#parent").show();
+                    //            $("#parent-label").show();
+                    //        } else {
+                    //            $("#parent").hide();
+                    //            $("#parent-label").hide();
+                    //        }
+                    //    }
+                    //
+                    //    $("#type").change(function() {
+                    //        showHideParent($(this));
+                    //    });
+                    //    showHideParent($("#type"));
+
+                    //    $("#addServices").click(function() {
+                    //        $("#service_multi").copyOptions("#service_multi_selected");
+                    //        $("#service_multi").removeOption(/./, true);
+                    //    });
+                    //
+                    //    $("#removeServices").click(function() {
+                    //        $("#service_multi_selected").copyOptions("#service_multi");
+                    //        $("#service_multi_selected").removeOption(/./, true);
+                    //    });
+
+                    //    $('#preview').click(function() {
+                    //        if ($("#type").val() == "subst" || // <?php echo QP_Model_ReceiptPattern::TYPE_SUBSTITUTION;?>
+                    //            $("#type").val() == "customdoc" || // <?php echo QP_Model_ReceiptPattern::TYPE_CUSTOMDOC;?>
+                    //            $("#type").val() == "encashment") { // <?php echo QP_Model_ReceiptPattern::TYPE_ENCASHMENT;?>
+                    //            var pid = $("#parent").val();
+                    //        } else {
+                    //            var pid = null;
+                    //        }
+                    //        preview.show(fieldManager.get(), pid);
+                    //    });
+
+                    //    SyntaxHighlighter.all();
+                    //    $("#showServiceConfig").click(function() {
+                    //        $("#serviceConfig").toggle();
+                    //        return false;
+                    //    });
+                });
+            </script>            
+
+        </div>
+    </body>
+</html>
