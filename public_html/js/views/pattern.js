@@ -5,7 +5,8 @@ app.PatternView = Backbone.View.extend({
     el: '#pattern',
     deletedList: [],
     events: {
-        "click .restoreLineButton": "restore"
+        "click .restoreLineButton": "restore",
+        "update-sort": "updateSort"
     },
     initialize: function (initialLines) {
         _.bindAll(this, 'render', 'menuAction', 'appendLine'); // every function that uses 'this' as the current object should be in here
@@ -16,18 +17,35 @@ app.PatternView = Backbone.View.extend({
         this.render();
     },
     render: function () {
+//        console.log("pattern.render");
         this.linesContainer.html("");
         this.collection.each(function (item) {
             this.appendLine(item);
         }, this);
-        this.restoreLineButton.button({icons: {primary: "ui-icon-arrowreturnthick-1-w"}}).hide();
-        this.linesContainer.sortable({axis: 'y', containment: 'parent'});
+        this.restoreLineButton.button({icons: {primary: "ui-icon-stringsowreturnthick-1-w"}}).hide();
+        this.linesContainer.sortable({
+            axis: 'y',
+            containment: 'parent',
+            stop: function (e, ui) {
+                ui.item.trigger('drop', ui.item.index());
+                return true;
+            }
+        });
     },
     appendLine: function (line, collection, options) {
-        var lineView = new app.LineView({
-            model: line,
-            parent: this
-        });
+        if (!line.special) {
+//            this.special = "";
+            var lineView = new app.LineView({
+                model: line,
+                parent: this
+            });
+        } else {
+            var lineView = new app.LineSpecial({
+                model: line,
+                parent: this
+            });
+        }
+        
         if (options !== undefined) {
             var $lineBefore = this.linesContainer.find(".patternLine:eq(" + options.at + ")");
             $lineBefore.before(lineView.render().el);
@@ -49,8 +67,13 @@ app.PatternView = Backbone.View.extend({
         if (act == 'cancel') {
             return;
         } else if (act == 'rawblock') {
-            this.affectedField = clickedLineView;
-            new RawBlockFormDialog(this);
+            this.affectedLineView = clickedLineView;
+
+            this.$el.append("<div id='modalContainer'></div>")
+            var rawBlockFormDialogView = new app.RawBlockFormDialogView(this);
+//            console.log(rawBlockFormDialogView.render().el);
+            rawBlockFormDialogView.render();
+//            $('.modalContainer').html(rawBlockFormDialogView.render().el);
         } else {
             this.counter++;
             var line = new app.Line();
@@ -63,4 +86,44 @@ app.PatternView = Backbone.View.extend({
         // 
 //        this.render();
     },
+    insertRawBlock: function (text) {
+        if (!text) {
+            return;
+        }
+        if (!this.affectedLineView) {
+            return;
+        }
+        SPACE = String.fromCharCode(160);
+        PARA = String.fromCharCode(182);
+        MIDDOT = String.fromCharCode(183);
+        SHY = String.fromCharCode(173);
+        text = text.replace(new RegExp(SHY, "g"), "").
+                replace(new RegExp(MIDDOT, "g"), " ").
+                replace(new RegExp(PARA, "g"), "");
+        var strings = text.split("\n");
+        var index = this.collection.indexOf(this.affectedLineView.model);
+        for (var i in strings) {
+            var line = new app.Line();
+            if (strings[i]) {
+                line.set({text: strings[i]});
+            } else {
+                line.set({text: 'vtab'});
+            }
+            this.collection.add(line, {at: index++});
+        }
+    },
+    updateSort: function(event, model, position) {            
+        this.collection.remove(model);
+
+        this.collection.each(function (model, index) {
+            var ordinal = index;
+            if (index >= position) {
+                ordinal += 1;
+            }
+            model.set('ordinal', ordinal);
+        });            
+        model.set('ordinal', position);
+        this.collection.add(model, {at: position});
+        this.render();
+    }    
 });

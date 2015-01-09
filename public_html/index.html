@@ -4,27 +4,35 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="js/libs/jquery/jquery.min.js"></script>
-        <script src="js/libs/jquery/jquery-ui-1.10.4.custom.min.js"></script>
-        <script src="js/libs/underscore.js/underscore-min.js"></script>
-        <script src="js/libs/backbone.js/backbone-min.js"></script>
-        <script src="js/models/line.js"></script>
-        <script src="js/collections/pattern.js"></script>
-        <script src="js/views/line.js"></script>
-        <script src="js/views/pattern.js"></script>
-        <script src="js/app.js"></script>
         <link rel="stylesheet" type="text/css" href="css/receipt.css">
         <link rel="stylesheet" type="text/css" href="css/receipt.css">
         <link rel="stylesheet" type="text/css" href="css/ui-smoothness-1.10.4/jquery-ui-1.10.4.custom.min.css"/>
+        <link rel="stylesheet" type="text/css" href="js/libs/backbone.modal/backbone.modal.css"/>
+        <link rel="stylesheet" type="text/css" href="js/libs/backbone.modal/backbone.modal.theme.css"/>
     </head>
     <body>
         <div id="lineTemplate" style="display:none;">
-            <input type="text" value="<%= text %>">
+            <input type="text" name="text" value="<%= text %>">
             <span class="dragabble">Нажмите и ведите для перетаскивания</span>
             <div class="actionList">
                 <button class="menuButton">Добавить</button>
                 <button class="deleteButton">Удалить</button>
             </div>
-        </div>      
+        </div>
+        <div id="someElem"></div>
+        <div id="rawBlockFormDialogTemplate" style="display:none;">
+            <div class="bbm-modal__topbar">
+                <h3 class="bbm-modal__title">Многострочный блок текста</h3>
+            </div>
+            <div class="bbm-modal__section">
+                <textarea style="height:200px;" name="multitext"></textarea>
+            </div>
+            <div class="bbm-modal__bottombar">
+                <a class="insertButton bbm-button">Вставить</a>
+                <a class="cancelButton bbm-button">Отменить</a>
+            </div>            
+        </div>
+
         <div>
             <form action="" method="post" enctype="application/x-www-form-urlencoded" id="terminalForm">
                 type: <input name="type"><br/>
@@ -49,13 +57,12 @@
                 <div class="spacer" style="height:10px;"></div>
 
                 <div id="pattern">
-                    <div class="linesContainer">
-                    </div>
+                    <div class="linesContainer"></div>
                     <div><button class="restoreLineButton">Восстановить удаленную строку</button></div>
                 </div>
 
-                <input type="submit" name="save_and_back">
-                <input type="submit" name="save">
+                <input type="submit" name="save_and_back" id="save_and_back">
+                <input type="submit" name="save" id="save">
                 <input type="button" class="button" value="Предпросмотр" id="preview" />
                 <input type="button" name="cancel">
             </form>
@@ -83,6 +90,13 @@
                     //    var rmgrContainer = fieldManager.draw(new Array());
 
                     //    $(rmgrContainer).appendTo($("#linesContainer"));
+                    var lines = [
+                        {text: '1', special: 0},
+                        {text: '2', special: 0},
+                        {text: '3', special: 0},
+                    ];
+
+                    var patternView = new app.PatternView(lines);
 
                     $("#addMenu").menu().hide();
                     $("#menuContainer").show();
@@ -94,40 +108,41 @@
                             clearTimeout(menuHideTimer);
                     });
 
-                    //    $("#save_and_back, #save").click(function () {
-                    //
-                    //        var $this = $(this);
-                    //        var data = {
-                    //            //'id': '<?php echo $this->patternId?>',
-                    //            'lines': fieldManager.get(),
-                    //            'name': $("#name").val(),
-                    //            'type': $("#type").val()
-                    //        };
-                    //        if ($("#type").val() == "<?php echo QP_Model_ReceiptPattern::TYPE_SUBSTITUTION;?>" ||
-                    //            $("#type").val() == "<?php echo QP_Model_ReceiptPattern::TYPE_CUSTOMDOC;?>" ||
-                    //            $("#type").val() == "<?php echo QP_Model_ReceiptPattern::TYPE_ENCASHMENT;?>") {
-                    //
-                    //            $("#service_multi_selected").selectOptions(/./);
-                    //            data['service_ids'] = $("#service_multi_selected").selectedValues();
-                    //            data['parent'] = $("#parent").val();
-                    //        }
-                    //
-                    //        //$.post('<?php echo $this->url(['controller' => 'pattern-edit', 'action' => 'save']);?>', data, function(result) {
-                    //        $.get('pattern-edit/save', data, function(result) {
-                    //            if (result.code === 0) {
-                    //                if ($this.attr("id") == "save_and_back") {
-                    //                    window.location = 'pattern-list/index';
-                    //                } else {
-                    //                    $(".button").show();
-                    //                }
-                    //            } else {
-                    //                alert("Не удалось сохранить шаблон \n" + result.message);
-                    //                $(".button").show();
-                    //            }
-                    //        });
-                    //
-                    //        return false;
-                    //    });
+                    $("#save_and_back, #save").click(function () {
+
+//                        var $this = $(this);
+                        var data = {
+//                            'lines': fieldManager.get(),
+                            'lines': patternView.collection.toJSON(),
+                            'name': $("#name").val(),
+                            'type': $("#type").val()
+                        };
+                        console.log(data);
+//                        if ($("#type").val() == "<?php echo QP_Model_ReceiptPattern::TYPE_SUBSTITUTION;?>" ||
+//                                $("#type").val() == "<?php echo QP_Model_ReceiptPattern::TYPE_CUSTOMDOC;?>" ||
+//                                $("#type").val() == "<?php echo QP_Model_ReceiptPattern::TYPE_ENCASHMENT;?>") {
+//
+//                            $("#service_multi_selected").selectOptions(/./);
+//                            data['service_ids'] = $("#service_multi_selected").selectedValues();
+//                            data['parent'] = $("#parent").val();
+//                        }
+//
+//                        //$.post('<?php echo $this->url(['controller' => 'pattern-edit', 'action' => 'save']);?>', data, function(result) {
+//                        $.get('pattern-edit/save', data, function (result) {
+//                            if (result.code === 0) {
+//                                if ($this.attr("id") == "save_and_back") {
+//                                    window.location = 'pattern-list/index';
+//                                } else {
+//                                    $(".button").show();
+//                                }
+//                            } else {
+//                                alert("Не удалось сохранить шаблон \n" + result.message);
+//                                $(".button").show();
+//                            }
+//                        });
+
+                        return false;
+                    });
 
                     //    $("#cancel").click(function() {
                     //        history.back();
@@ -182,5 +197,17 @@
             </script>            
 
         </div>
+        <script src="js/libs/jquery/jquery-ui-1.10.4.custom.min.js"></script>
+        <script src="js/libs/underscore.js/underscore-min.js"></script>
+        <script src="js/libs/backbone.js/backbone-min.js"></script>
+        <script src="js/libs/backbone.modelbinder/Backbone.ModelBinder.js"></script>
+        <script src="js/libs/backbone.modal/backbone.modal-min.js"></script>
+        <script src="js/models/line.js"></script>
+        <script src="js/collections/pattern.js"></script>
+        <script src="js/views/line.js"></script>
+        <script src="js/views/pattern.js"></script>
+        <script src="js/views/rawBlockFormDialogView.js"></script>
+
+        <script src="js/app.js"></script>
     </body>
 </html>

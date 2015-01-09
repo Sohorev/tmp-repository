@@ -6,12 +6,13 @@ app.LineView = Backbone.View.extend({
     className: 'patternLine',
     events: {
         "click .menuButton": "menu",
-        "click .deleteButton": "delete"
+        "click .deleteButton": "delete",
+        "drop" : "drop"
     },
-    
     initialize: function (options) {
         this.parent = options.parent;
-        this.listenTo(this.model, "change", this.render);
+        this.model.on('destroy', this.remove, this);        
+        this.modelBinder = new Backbone.ModelBinder();
     },
     render: function () {
 
@@ -20,6 +21,7 @@ app.LineView = Backbone.View.extend({
         this.$el.find(".menuButton").button({icons: {primary: "ui-icon-gear", secondary: "ui-icon-triangle-1-s"}, text: false});
         this.$el.find(".deleteButton").button({icons: {primary: "ui-icon-circle-close"}, text: false});
         this.$el.find(".actionList").buttonset();
+        this.modelBinder.bind(this.model, this.el);        
 
         return this;
     },
@@ -48,4 +50,8 @@ app.LineView = Backbone.View.extend({
         
         return false;
     },
+    drop: function(event, index) {
+        // sortable trigger
+        this.$el.trigger('update-sort', [this.model, index]);
+    },          
 });
