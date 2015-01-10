@@ -1,8 +1,26 @@
-// Backbone.CollectionBinder v1.0.2
-// (c) 2013 Bart Wood
+// Backbone.CollectionBinder v1.0.6
+// (c) 2014 Bart Wood
 // Distributed Under MIT License
 
-(function(){
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(['underscore', 'jquery', 'backbone', 'Backbone.ModelBinder'], factory);
+    }
+    else if(typeof module !== 'undefined' && module.exports) {
+        // CommonJS
+        module.exports = factory(
+            require('underscore'),
+            require('jquery'),
+            require('backbone')
+        );
+    }
+    else {
+        // Browser globals
+        factory(_, $, Backbone);
+    }
+}
+(function(_, $, Backbone){
 
     if(!Backbone){
         throw 'Please include Backbone.js before Backbone.ModelBinder.js';
@@ -22,10 +40,15 @@
         // Let the factory just use the trigger function on the view binder
         this._elManagerFactory.trigger = this.trigger;
 
-        this._options = options || {};
+        this._options = _.extend({}, Backbone.CollectionBinder.options, options);
     };
 
-    Backbone.CollectionBinder.VERSION = '1.0.1';
+    // Static setter for class level options
+    Backbone.CollectionBinder.SetOptions = function(options){
+        Backbone.CollectionBinder.options = options;
+    };
+
+    Backbone.CollectionBinder.VERSION = '1.0.6';
 
     _.extend(Backbone.CollectionBinder.prototype, Backbone.Events, {
         bind: function(collection, parentEl){
@@ -35,7 +58,7 @@
             if(!parentEl) throw 'parentEl must be defined';
 
             this._collection = collection;
-            this._elManagerFactory.setParentEl(parentEl);
+            this._elManagerFactory._setParentEl(parentEl);
 
             this._onCollectionReset();
 
@@ -125,7 +148,7 @@
                 var modelElManager = this.getManagerForModel(model);
                 if(modelElManager){
                     var modelEl = modelElManager.getEl();
-                    var currentRootEls = $(this._elManagerFactory.getParentEl()).children();
+                    var currentRootEls = $(this._elManagerFactory._getParentEl()).children();
 
                     if(currentRootEls[modelIndex] !== modelEl[0]){
                         modelEl.detach();
@@ -145,15 +168,15 @@
         this._elHtml = elHtml;
         this._bindings = bindings;
 
-        if(! _.isString(this._elHtml)) throw 'elHtml must be a valid html string';
+        if(!_.isFunction(this._elHtml) && ! _.isString(this._elHtml)) throw 'elHtml must be a compliled template or an html string';
     };
 
     _.extend(Backbone.CollectionBinder.ElManagerFactory.prototype, {
-        setParentEl: function(parentEl){
+        _setParentEl: function(parentEl){
             this._parentEl = parentEl;
         },
 
-        getParentEl: function(){
+        _getParentEl: function(){
             return this._parentEl;
         },
 
@@ -163,8 +186,7 @@
                 _model: model,
 
                 createEl: function(){
-
-                    this._el =  $(this._elHtml);
+                    this._el = _.isFunction(this._elHtml) ? $(this._elHtml({model: this._model.toJSON()})) : $(this._elHtml);
                     $(this._parentEl).append(this._el);
 
                     if(this._bindings){
@@ -223,11 +245,11 @@
     };
 
     _.extend(Backbone.CollectionBinder.ViewManagerFactory.prototype, {
-        setParentEl: function(parentEl){
+        _setParentEl: function(parentEl){
             this._parentEl = parentEl;
         },
 
-        getParentEl: function(){
+        _getParentEl: function(){
             return this._parentEl;
         },
 
@@ -249,7 +271,7 @@
                     }
                     else {
                         this._view.$el.remove();
-                        console.log('warning, you should implement a close() function for your view, you might end up with zombies');
+                        console && console.log && console.log('warning, you should implement a close() function for your view, you might end up with zombies');
                     }
 
                     this.trigger('elRemoved', this._model, this._view);
@@ -278,4 +300,4 @@
         }
     });
 
-}).call(this);
+}));

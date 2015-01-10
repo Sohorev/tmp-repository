@@ -11,16 +11,58 @@
         <link rel="stylesheet" type="text/css" href="js/libs/backbone.modal/backbone.modal.theme.css"/>
     </head>
     <body>
-        <div id="lineTemplate" style="display:none;">
-            <input type="text" name="text" value="<%= text %>">
+        <div id="lineActionsPartial" style="display:none;">
             <span class="dragabble">Нажмите и ведите для перетаскивания</span>
             <div class="actionList">
                 <button class="menuButton">Добавить</button>
                 <button class="deleteButton">Удалить</button>
             </div>
         </div>
-        <div id="someElem"></div>
-        <div id="rawBlockFormDialogTemplate" style="display:none;">
+        <script id="lineTemplate" type="text/template">
+            <input type="text" name="text" class="lineContent preview">
+            <label style="font-weight: bold"><input type="checkbox" name="b" value="1">B</label>
+            <label style="text-decoration: underline !important"><input type="checkbox" name="u" value="1">U</label>
+            <div class="alignment">
+                <label>
+                    <img src="/img/common/receipts/format-justify-left.png"/>
+                    <input type="radio" name="<%=alignmentName%>" value="l">
+                </label>
+                <label>
+                    <img src="/img/common/receipts/format-justify-center.png"/>
+                    <input type="radio" name="<%=alignmentName%>" value="c">
+                </label>
+                <label>
+                    <img src="/img/common/receipts/format-justify-right.png"/>
+                    <input type="radio" name="<%=alignmentName%>" value="r">
+                </label>
+            </div>
+            <%= app.lineActions() %>
+        </script>
+        <script id="lineSeparatorTemplate" type="text/template">
+            <input type="text" name="text" value="<%= text %>">
+            <input type="text" name="attrs" value="<%= attrs %>">
+            <%= app.lineActions() %>
+        </script>
+        <script id="lineTemplate-subst" type="text/template">
+            Здесь будет подстановка, например "Номер телефона: $tel$"
+            <%= app.lineActions() %>
+        </script>
+        <script id="lineTemplate-vtab" type="text/template">
+            <%= String.fromCharCode(182)%>
+            <%= app.lineActions() %>
+        </script>
+        <script id="lineTemplate-support" type="text/template">
+            <%= app.lineActions() %>
+        </script>
+        <script id="lineTemplate-site" type="text/template">
+            <%= app.lineActions() %>
+        </script>
+        <script id="lineTemplate-logo" type="text/template">
+            <img src="img/logo-for-pdf-cheque.png"/>
+            <%= app.lineActions() %>
+        </script>
+        
+        <script id="rawBlockFormDialogTemplate" type="text/template">
             <div class="bbm-modal__topbar">
                 <h3 class="bbm-modal__title">Многострочный блок текста</h3>
             </div>
@@ -31,7 +73,7 @@
                 <a class="insertButton bbm-button">Вставить</a>
                 <a class="cancelButton bbm-button">Отменить</a>
             </div>            
-        </div>
+        </script>
 
         <div>
             <form action="" method="post" enctype="application/x-www-form-urlencoded" id="terminalForm">
@@ -91,7 +133,7 @@
 
                     //    $(rmgrContainer).appendTo($("#linesContainer"));
                     var lines = [
-                        {text: '1', special: 0},
+                        {text: '1', special: 0, attrs:  bin = parseInt('11111111', 2)},
                         {text: '2', special: 0},
                         {text: '3', special: 0},
                     ];
@@ -200,11 +242,15 @@
         <script src="js/libs/jquery/jquery-ui-1.10.4.custom.min.js"></script>
         <script src="js/libs/underscore.js/underscore-min.js"></script>
         <script src="js/libs/backbone.js/backbone-min.js"></script>
-        <script src="js/libs/backbone.modelbinder/Backbone.ModelBinder.js"></script>
+        <script src="js/libs/backbone.modelbinder/Backbone.ModelBinder.min.js"></script>
         <script src="js/libs/backbone.modal/backbone.modal-min.js"></script>
         <script src="js/models/line.js"></script>
         <script src="js/collections/pattern.js"></script>
+        
+        <script src="js/partials/lineActions.js"></script>
         <script src="js/views/line.js"></script>
+        <script src="js/views/lineSpecial.js"></script>
+        <script src="js/views/lineSpecialSeparator.js"></script>
         <script src="js/views/pattern.js"></script>
         <script src="js/views/rawBlockFormDialogView.js"></script>
 

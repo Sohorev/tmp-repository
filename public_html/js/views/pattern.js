@@ -33,9 +33,14 @@ app.PatternView = Backbone.View.extend({
         });
     },
     appendLine: function (line, collection, options) {
-        if (!line.special) {
-//            this.special = "";
+
+        if (!line.get("special")) {
             var lineView = new app.LineView({
+                model: line,
+                parent: this
+            });
+        } else if (line.get("special") == 'sep') {
+            var lineView = new app.LineSpecialSeparator({
                 model: line,
                 parent: this
             });
@@ -79,6 +84,9 @@ app.PatternView = Backbone.View.extend({
             var line = new app.Line();
             if (act == 'string')
                 act = "";
+            if (act == 'sep') {
+                line.set({text: "-", attrs: 30});
+            }
             line.set({special: act});
             var index = this.collection.indexOf(clickedLineView.model);
             this.collection.add(line, {at: index});
@@ -93,10 +101,9 @@ app.PatternView = Backbone.View.extend({
         if (!this.affectedLineView) {
             return;
         }
-        SPACE = String.fromCharCode(160);
-        PARA = String.fromCharCode(182);
-        MIDDOT = String.fromCharCode(183);
-        SHY = String.fromCharCode(173);
+        var PARA = String.fromCharCode(182);
+        var MIDDOT = String.fromCharCode(183);
+        var SHY = String.fromCharCode(173);
         text = text.replace(new RegExp(SHY, "g"), "").
                 replace(new RegExp(MIDDOT, "g"), " ").
                 replace(new RegExp(PARA, "g"), "");
