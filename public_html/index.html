@@ -74,6 +74,17 @@
                 <a class="cancelButton bbm-button">Отменить</a>
             </div>            
         </script>
+        <script id="previewTemplate" type="text/template">
+            <div class="bbm-modal__topbar">
+                <h3 class="bbm-modal__title">Превью</h3>
+            </div>
+            <div class="bbm-modal__section" id="previewLinesContainer">
+                
+            </div>
+            <div class="bbm-modal__bottombar">
+                <a class="cancelButton bbm-button">Ok</a>
+            </div>            
+        </script>
 
         <div>
             <form action="" method="post" enctype="application/x-www-form-urlencoded" id="terminalForm">
@@ -101,12 +112,11 @@
                 <div id="pattern">
                     <div class="linesContainer"></div>
                     <div><button class="restoreLineButton">Восстановить удаленную строку</button></div>
+                    <input type="submit" name="save_and_back" id="save_and_back">
+                    <input type="submit" name="save" id="save">
+                    <input type="button" class="button" value="Предпросмотр" id="preview" />
+                    <input type="button" name="cancel">
                 </div>
-
-                <input type="submit" name="save_and_back" id="save_and_back">
-                <input type="submit" name="save" id="save">
-                <input type="button" class="button" value="Предпросмотр" id="preview" />
-                <input type="button" name="cancel">
             </form>
 
             <div id="menuContainer">
@@ -253,6 +263,7 @@
         <script src="js/views/lineSpecialSeparator.js"></script>
         <script src="js/views/pattern.js"></script>
         <script src="js/views/rawBlockFormDialogView.js"></script>
+        <script src="js/views/preview.js"></script>
 
         <script src="js/app.js"></script>
     </body>

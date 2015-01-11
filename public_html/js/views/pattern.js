@@ -6,6 +6,7 @@ app.PatternView = Backbone.View.extend({
     deletedList: [],
     events: {
         "click .restoreLineButton": "restore",
+        "click #preview": "previewShow",
         "update-sort": "updateSort"
     },
     initialize: function (initialLines) {
@@ -76,9 +77,7 @@ app.PatternView = Backbone.View.extend({
 
             this.$el.append("<div id='modalContainer'></div>")
             var rawBlockFormDialogView = new app.RawBlockFormDialogView(this);
-//            console.log(rawBlockFormDialogView.render().el);
             rawBlockFormDialogView.render();
-//            $('.modalContainer').html(rawBlockFormDialogView.render().el);
         } else {
             this.counter++;
             var line = new app.Line();
@@ -118,6 +117,11 @@ app.PatternView = Backbone.View.extend({
             }
             this.collection.add(line, {at: index++});
         }
+    },
+    previewShow: function() {
+        this.$el.append("<div id='previewContainer'></div>")
+        var previewView = new app.PreviewView(this);
+        previewView.render();
     },
     updateSort: function(event, model, position) {            
         this.collection.remove(model);
